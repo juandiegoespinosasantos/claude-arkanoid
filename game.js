@@ -23,7 +23,7 @@ const MAX_DT = 1 / 30;                   // tope de dt en segundos
 
 // --- Estado mutable ---
 const state = {
-  mode: 'serve',        // 'serve' | 'playing' | 'paused' | 'won' | 'lost'
+  mode: 'serve',        // 'serve' | 'playing' | 'paused' | 'levelComplete' | 'won' | 'lost'
   level: 1,             // índice humano: 1, 2 o 3 — LEVELS[level - 1] es la config activa
   score: 0,
   lives: START_LIVES,
@@ -228,7 +228,7 @@ function updateBall(dt) {
   checkBlockCollision();
 
   if (state.blocks.every((block) => !block.alive)) {
-    state.mode = 'won';
+    state.mode = state.level < LEVELS.length ? 'levelComplete' : 'won';
     ball.vx = 0;
     ball.vy = 0;
     return;
@@ -305,8 +305,13 @@ function render() {
   ctx.textAlign = 'right';
   ctx.fillText('Vidas: ' + state.lives, CANVAS_W - 8, HUD_H / 2);
 
-  if (state.mode === 'won' || state.mode === 'lost' || state.mode === 'paused') {
-    const messages = { won: '¡Victoria!', lost: 'Game Over', paused: 'Pausa' };
+  if (state.mode === 'won' || state.mode === 'lost' || state.mode === 'paused' || state.mode === 'levelComplete') {
+    const messages = {
+      won: '¡Victoria!',
+      lost: 'Game Over',
+      paused: 'Pausa',
+      levelComplete: `¡Nivel ${state.level} superado!`,
+    };
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.fillRect(0, HUD_H, CANVAS_W, CANVAS_H - HUD_H);
