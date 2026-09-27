@@ -1,6 +1,6 @@
 # SPEC 02 — Animación de explosión al destruir bloques
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-09-27
 > **Objetivo:** Al romperse un bloque, reproducir en su lugar la animación de explosión de 4 fotogramas de `EXPLOSION_FRAMES` durante 150 ms antes de que desaparezca del todo.

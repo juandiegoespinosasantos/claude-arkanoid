@@ -1,6 +1,6 @@
 # SPEC 01 — MVP jugable de Arkanoid
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** —
 > **Fecha:** 2026-09-27
 > **Objetivo:** Tener una partida completa de Arkanoid jugable en el navegador, con paleta, pelota, un nivel de bloques, vidas, puntuación, pausa y pantallas de victoria y game over.

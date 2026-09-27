@@ -257,6 +257,12 @@ function render() {
     drawSprite(ctx, 'block_' + block.color, block.x, block.y, block.w, block.h);
   }
 
+  for (const explosion of state.explosions) {
+    const frameIndex = Math.min(3, Math.floor(explosion.elapsed / (EXPLOSION_DURATION / 4)));
+    const frame = EXPLOSION_FRAMES[explosion.color][frameIndex];
+    drawFrame(ctx, frame, explosion.x, explosion.y, BLOCK_W, BLOCK_H);
+  }
+
   drawSprite(ctx, 'paddle', state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
   drawSprite(ctx, 'ball', state.ball.x, state.ball.y, state.ball.size, state.ball.size);
 
