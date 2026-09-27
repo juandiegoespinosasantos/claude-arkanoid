@@ -1,6 +1,6 @@
 # SPEC 03 — Sonido de rebote y rotura de bloques
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01, SPEC 02
 > **Fecha:** 2026-09-27
 > **Objetivo:** Reproducir `assets/sounds/ball-bounce.mp3` cada vez que la pelota rebota contra una superficie distinta de un bloque (paredes, techo o paleta), y `assets/sounds/break-sound.mp3` cada vez que se rompe un bloque.

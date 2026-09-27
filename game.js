@@ -154,6 +154,7 @@ function bounceOffPaddle() {
   ball.vx = BALL_SPEED * Math.sin(angle);
   ball.vy = -BALL_SPEED * Math.cos(angle);
   ball.y = paddle.y - ball.size;
+  playSound('bounce');
 }
 
 function checkBlockCollision() {
@@ -178,6 +179,7 @@ function checkBlockCollision() {
     block.alive = false;
     state.score += POINTS_PER_BLOCK;
     state.explosions.push({ x: block.x, y: block.y, color: block.color, elapsed: 0 });
+    playSound('break');
     return; // como máximo un bloque por frame
   }
 }
