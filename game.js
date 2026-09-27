@@ -199,15 +199,18 @@ function updateBall(dt) {
   if (ball.x <= 0) {
     ball.x = 0;
     ball.vx = -ball.vx;
+    playSound('bounce');
   } else if (ball.x + ball.size >= CANVAS_W) {
     ball.x = CANVAS_W - ball.size;
     ball.vx = -ball.vx;
+    playSound('bounce');
   }
 
   // Techo (borde inferior del HUD)
   if (ball.y <= HUD_H) {
     ball.y = HUD_H;
     ball.vy = -ball.vy;
+    playSound('bounce');
   }
 
   checkBlockCollision();
