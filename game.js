@@ -22,6 +22,7 @@ const state = {
   paddle: { x: (CANVAS_W - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
   ball:   { x: 0, y: 0, size: BALL_SIZE, vx: 0, vy: 0 },
   blocks: [ /* { x, y, w, h, color, alive: true } */ ],
+  explosions: [ /* { x, y, color, elapsed } */ ],
   input:  { left: false, right: false, mouseX: null },
 };
 
@@ -62,6 +63,7 @@ function resetGame() {
   state.score = 0;
   state.lives = START_LIVES;
   state.blocks = createBlocks();
+  state.explosions = [];
   state.paddle.x = (CANVAS_W - PADDLE_W) / 2;
   state.ball.vx = 0;
   state.ball.vy = 0;
@@ -164,6 +166,7 @@ function checkBlockCollision() {
 
     block.alive = false;
     state.score += POINTS_PER_BLOCK;
+    state.explosions.push({ x: block.x, y: block.y, color: block.color, elapsed: 0 });
     return; // como máximo un bloque por frame
   }
 }
