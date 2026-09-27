@@ -58,11 +58,30 @@ function launchBall() {
   state.mode = 'playing';
 }
 
+function resetGame() {
+  state.score = 0;
+  state.lives = START_LIVES;
+  state.blocks = createBlocks();
+  state.paddle.x = (CANVAS_W - PADDLE_W) / 2;
+  state.ball.vx = 0;
+  state.ball.vy = 0;
+  state.mode = 'serve';
+  serveBall();
+}
+
+function handleAction() {
+  if (state.mode === 'won' || state.mode === 'lost') {
+    resetGame();
+  } else {
+    launchBall();
+  }
+}
+
 window.addEventListener('keydown', (e) => {
-  if (e.key === ' ' || e.key === 'Spacebar') launchBall();
+  if (e.key === ' ' || e.key === 'Spacebar') handleAction();
 });
 
-canvas.addEventListener('click', launchBall);
+canvas.addEventListener('click', handleAction);
 
 // --- Bloques ---
 function createBlocks() {
@@ -151,6 +170,8 @@ function updateBall(dt) {
     return;
   }
 
+  if (state.mode !== 'playing') return; // 'won' / 'lost': la pelota deja de moverse
+
   ball.x += ball.vx * dt;
   ball.y += ball.vy * dt;
 
@@ -171,6 +192,13 @@ function updateBall(dt) {
 
   checkBlockCollision();
 
+  if (state.blocks.every((block) => !block.alive)) {
+    state.mode = 'won';
+    ball.vx = 0;
+    ball.vy = 0;
+    return;
+  }
+
   // Paleta: solo se procesa si la pelota baja, para no quedar atrapada dentro
   const hitsPaddle =
     ball.vy > 0 &&
@@ -183,19 +211,25 @@ function updateBall(dt) {
     bounceOffPaddle();
   }
 
-  // Cae por debajo de la paleta: vuelve a servirse (las vidas se restan en el Paso 6)
+  // Cae por debajo de la paleta: se pierde una vida
   if (ball.y > CANVAS_H) {
     ball.vx = 0;
     ball.vy = 0;
-    state.mode = 'serve';
-    serveBall();
+    state.lives -= 1;
+
+    if (state.lives <= 0) {
+      state.mode = 'lost';
+    } else {
+      state.mode = 'serve';
+      serveBall();
+    }
   }
 }
 
 function update(dt) {
   updatePaddle(dt);
   updateBall(dt);
-  // La lógica de bloques, vidas y pausa se añade en los siguientes pasos.
+  // La pausa se añade en el Paso 7.
 }
 
 function render() {
@@ -218,6 +252,19 @@ function render() {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'left';
   ctx.fillText('Puntos: ' + state.score, 8, HUD_H / 2);
+
+  ctx.textAlign = 'right';
+  ctx.fillText('Vidas: ' + state.lives, CANVAS_W - 8, HUD_H / 2);
+
+  if (state.mode === 'won' || state.mode === 'lost') {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(0, HUD_H, CANVAS_W, CANVAS_H - HUD_H);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(state.mode === 'won' ? '¡Victoria!' : 'Game Over', CANVAS_W / 2, CANVAS_H / 2);
+  }
 }
 
 function loop(timestamp) {
