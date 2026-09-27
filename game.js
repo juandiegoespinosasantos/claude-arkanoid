@@ -235,10 +235,18 @@ function updateBall(dt) {
   }
 }
 
+function updateExplosions(dt) {
+  const elapsedMs = dt * 1000;
+  state.explosions = state.explosions
+    .map((explosion) => ({ ...explosion, elapsed: explosion.elapsed + elapsedMs }))
+    .filter((explosion) => explosion.elapsed < EXPLOSION_DURATION);
+}
+
 function update(dt) {
   if (state.mode === 'paused') return;
   updatePaddle(dt);
   updateBall(dt);
+  updateExplosions(dt);
 }
 
 function render() {
