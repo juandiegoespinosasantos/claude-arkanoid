@@ -5,11 +5,18 @@
 const CANVAS_W = 480, CANVAS_H = 640;
 const HUD_H = 32;                       // franja superior del HUD
 const BLOCK_W = 32, BLOCK_H = 16;
-const BLOCK_COLS = 13, BLOCK_ROWS = 6;
+const BLOCK_COLS = 13;
 const GRID_X = 32, GRID_Y = 64;         // esquina superior izquierda de la cuadrícula
 const ROW_COLORS = ['red', 'yellow', 'cyan', 'magenta', 'hotpink', 'green'];
 const PADDLE_W = 80, PADDLE_H = 14, PADDLE_Y = 600, PADDLE_SPEED = 420; // px/s con teclado
-const BALL_SIZE = 16, BALL_SPEED = 300;  // px/s
+const BALL_SIZE = 16;
+
+// Niveles fijos (SPEC 04): cada uno define sus filas de bloques y la velocidad de la pelota
+const LEVELS = [
+  { rows: 6, ballSpeed: 300 },
+  { rows: 8, ballSpeed: 360 },
+  { rows: 10, ballSpeed: 420 },
+];
 const MAX_BOUNCE_ANGLE = Math.PI / 3;    // 60°
 const START_LIVES = 3, POINTS_PER_BLOCK = 10;
 const MAX_DT = 1 / 30;                   // tope de dt en segundos
@@ -17,6 +24,7 @@ const MAX_DT = 1 / 30;                   // tope de dt en segundos
 // --- Estado mutable ---
 const state = {
   mode: 'serve',        // 'serve' | 'playing' | 'paused' | 'won' | 'lost'
+  level: 1,             // índice humano: 1, 2 o 3 — LEVELS[level - 1] es la config activa
   score: 0,
   lives: START_LIVES,
   paddle: { x: (CANVAS_W - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
@@ -65,15 +73,16 @@ canvas.addEventListener('mousemove', (e) => {
 function launchBall() {
   if (state.mode !== 'serve') return;
   const angle = Math.PI / 6; // 30° a la derecha de la vertical
-  state.ball.vx = BALL_SPEED * Math.sin(angle);
-  state.ball.vy = -BALL_SPEED * Math.cos(angle);
+  const ballSpeed = LEVELS[state.level - 1].ballSpeed;
+  state.ball.vx = ballSpeed * Math.sin(angle);
+  state.ball.vy = -ballSpeed * Math.cos(angle);
   state.mode = 'playing';
 }
 
 function resetGame() {
   state.score = 0;
   state.lives = START_LIVES;
-  state.blocks = createBlocks();
+  state.blocks = createBlocks(state.level);
   state.explosions = [];
   state.paddle.x = (CANVAS_W - PADDLE_W) / 2;
   state.ball.vx = 0;
@@ -103,9 +112,10 @@ window.addEventListener('keydown', (e) => {
 });
 
 // --- Bloques ---
-function createBlocks() {
+function createBlocks(level) {
   const blocks = [];
-  for (let row = 0; row < BLOCK_ROWS; row++) {
+  const rows = LEVELS[level - 1].rows;
+  for (let row = 0; row < rows; row++) {
     for (let col = 0; col < BLOCK_COLS; col++) {
       blocks.push({
         x: GRID_X + col * BLOCK_W,
@@ -120,7 +130,7 @@ function createBlocks() {
   return blocks;
 }
 
-state.blocks = createBlocks();
+state.blocks = createBlocks(state.level);
 
 // --- Bucle de juego ---
 let lastTime = null;
@@ -151,8 +161,8 @@ function bounceOffPaddle() {
   let angle = ((ballCenter - paddleCenter) / (paddle.w / 2)) * MAX_BOUNCE_ANGLE;
   angle = Math.max(-MAX_BOUNCE_ANGLE, Math.min(MAX_BOUNCE_ANGLE, angle));
 
-  ball.vx = BALL_SPEED * Math.sin(angle);
-  ball.vy = -BALL_SPEED * Math.cos(angle);
+  ball.vx = LEVELS[state.level - 1].ballSpeed * Math.sin(angle);
+  ball.vy = -LEVELS[state.level - 1].ballSpeed * Math.cos(angle);
   ball.y = paddle.y - ball.size;
   playSound('bounce');
 }
