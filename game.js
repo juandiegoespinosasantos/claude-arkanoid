@@ -80,6 +80,7 @@ function launchBall() {
 }
 
 function resetGame() {
+  state.level = 1;
   state.score = 0;
   state.lives = START_LIVES;
   state.blocks = createBlocks(state.level);
