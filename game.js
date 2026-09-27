@@ -85,8 +85,21 @@ function serveBall() {
   ball.y = paddle.y - ball.size;
 }
 
+function bounceOffPaddle() {
+  const { ball, paddle } = state;
+  const ballCenter = ball.x + ball.size / 2;
+  const paddleCenter = paddle.x + paddle.w / 2;
+
+  let angle = ((ballCenter - paddleCenter) / (paddle.w / 2)) * MAX_BOUNCE_ANGLE;
+  angle = Math.max(-MAX_BOUNCE_ANGLE, Math.min(MAX_BOUNCE_ANGLE, angle));
+
+  ball.vx = BALL_SPEED * Math.sin(angle);
+  ball.vy = -BALL_SPEED * Math.cos(angle);
+  ball.y = paddle.y - ball.size;
+}
+
 function updateBall(dt) {
-  const { ball } = state;
+  const { ball, paddle } = state;
 
   if (state.mode === 'serve') {
     serveBall();
@@ -109,6 +122,18 @@ function updateBall(dt) {
   if (ball.y <= HUD_H) {
     ball.y = HUD_H;
     ball.vy = -ball.vy;
+  }
+
+  // Paleta: solo se procesa si la pelota baja, para no quedar atrapada dentro
+  const hitsPaddle =
+    ball.vy > 0 &&
+    ball.x + ball.size >= paddle.x &&
+    ball.x <= paddle.x + paddle.w &&
+    ball.y + ball.size >= paddle.y &&
+    ball.y + ball.size <= paddle.y + paddle.h;
+
+  if (hitsPaddle) {
+    bounceOffPaddle();
   }
 
   // Cae por debajo de la paleta: vuelve a servirse (las vidas se restan en el Paso 6)
