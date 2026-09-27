@@ -50,6 +50,20 @@ canvas.addEventListener('mousemove', (e) => {
   state.input.mouseX = (e.clientX - rect.left) * scaleX;
 });
 
+function launchBall() {
+  if (state.mode !== 'serve') return;
+  const angle = Math.PI / 6; // 30° a la derecha de la vertical
+  state.ball.vx = BALL_SPEED * Math.sin(angle);
+  state.ball.vy = -BALL_SPEED * Math.cos(angle);
+  state.mode = 'playing';
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.key === 'Spacebar') launchBall();
+});
+
+canvas.addEventListener('click', launchBall);
+
 // --- Bucle de juego ---
 let lastTime = null;
 
@@ -65,15 +79,58 @@ function updatePaddle(dt) {
   paddle.x = clampPaddleX(paddle.x);
 }
 
+function serveBall() {
+  const { paddle, ball } = state;
+  ball.x = paddle.x + paddle.w / 2 - ball.size / 2;
+  ball.y = paddle.y - ball.size;
+}
+
+function updateBall(dt) {
+  const { ball } = state;
+
+  if (state.mode === 'serve') {
+    serveBall();
+    return;
+  }
+
+  ball.x += ball.vx * dt;
+  ball.y += ball.vy * dt;
+
+  // Paredes laterales
+  if (ball.x <= 0) {
+    ball.x = 0;
+    ball.vx = -ball.vx;
+  } else if (ball.x + ball.size >= CANVAS_W) {
+    ball.x = CANVAS_W - ball.size;
+    ball.vx = -ball.vx;
+  }
+
+  // Techo (borde inferior del HUD)
+  if (ball.y <= HUD_H) {
+    ball.y = HUD_H;
+    ball.vy = -ball.vy;
+  }
+
+  // Cae por debajo de la paleta: vuelve a servirse (las vidas se restan en el Paso 6)
+  if (ball.y > CANVAS_H) {
+    ball.vx = 0;
+    ball.vy = 0;
+    state.mode = 'serve';
+    serveBall();
+  }
+}
+
 function update(dt) {
   updatePaddle(dt);
-  // La lógica de pelota, bloques, vidas y pausa se añade en los siguientes pasos.
+  updateBall(dt);
+  // La lógica de bloques, vidas y pausa se añade en los siguientes pasos.
 }
 
 function render() {
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
   drawSprite(ctx, 'paddle', state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
+  drawSprite(ctx, 'ball', state.ball.x, state.ball.y, state.ball.size, state.ball.size);
 
   // Franja del HUD
   ctx.fillStyle = '#222';
