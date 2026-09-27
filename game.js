@@ -83,6 +83,12 @@ window.addEventListener('keydown', (e) => {
 
 canvas.addEventListener('click', handleAction);
 
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'p' && e.key !== 'P') return;
+  if (state.mode === 'playing') state.mode = 'paused';
+  else if (state.mode === 'paused') state.mode = 'playing';
+});
+
 // --- Bloques ---
 function createBlocks() {
   const blocks = [];
@@ -227,9 +233,9 @@ function updateBall(dt) {
 }
 
 function update(dt) {
+  if (state.mode === 'paused') return;
   updatePaddle(dt);
   updateBall(dt);
-  // La pausa se añade en el Paso 7.
 }
 
 function render() {
@@ -256,14 +262,16 @@ function render() {
   ctx.textAlign = 'right';
   ctx.fillText('Vidas: ' + state.lives, CANVAS_W - 8, HUD_H / 2);
 
-  if (state.mode === 'won' || state.mode === 'lost') {
+  if (state.mode === 'won' || state.mode === 'lost' || state.mode === 'paused') {
+    const messages = { won: '¡Victoria!', lost: 'Game Over', paused: 'Pausa' };
+
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.fillRect(0, HUD_H, CANVAS_W, CANVAS_H - HUD_H);
 
     ctx.fillStyle = '#fff';
     ctx.font = '32px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(state.mode === 'won' ? '¡Victoria!' : 'Game Over', CANVAS_W / 2, CANVAS_H / 2);
+    ctx.fillText(messages[state.mode], CANVAS_W / 2, CANVAS_H / 2);
   }
 }
 
