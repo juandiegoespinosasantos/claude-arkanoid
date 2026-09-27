@@ -64,6 +64,26 @@ window.addEventListener('keydown', (e) => {
 
 canvas.addEventListener('click', launchBall);
 
+// --- Bloques ---
+function createBlocks() {
+  const blocks = [];
+  for (let row = 0; row < BLOCK_ROWS; row++) {
+    for (let col = 0; col < BLOCK_COLS; col++) {
+      blocks.push({
+        x: GRID_X + col * BLOCK_W,
+        y: GRID_Y + row * BLOCK_H,
+        w: BLOCK_W,
+        h: BLOCK_H,
+        color: ROW_COLORS[row],
+        alive: true,
+      });
+    }
+  }
+  return blocks;
+}
+
+state.blocks = createBlocks();
+
 // --- Bucle de juego ---
 let lastTime = null;
 
@@ -98,6 +118,31 @@ function bounceOffPaddle() {
   ball.y = paddle.y - ball.size;
 }
 
+function checkBlockCollision() {
+  const { ball, blocks } = state;
+
+  for (const block of blocks) {
+    if (!block.alive) continue;
+
+    const overlapsX = ball.x + ball.size > block.x && ball.x < block.x + block.w;
+    const overlapsY = ball.y + ball.size > block.y && ball.y < block.y + block.h;
+    if (!overlapsX || !overlapsY) continue;
+
+    const overlapX = Math.min(ball.x + ball.size, block.x + block.w) - Math.max(ball.x, block.x);
+    const overlapY = Math.min(ball.y + ball.size, block.y + block.h) - Math.max(ball.y, block.y);
+
+    if (overlapX < overlapY) {
+      ball.vx = -ball.vx;
+    } else {
+      ball.vy = -ball.vy;
+    }
+
+    block.alive = false;
+    state.score += POINTS_PER_BLOCK;
+    return; // como máximo un bloque por frame
+  }
+}
+
 function updateBall(dt) {
   const { ball, paddle } = state;
 
@@ -123,6 +168,8 @@ function updateBall(dt) {
     ball.y = HUD_H;
     ball.vy = -ball.vy;
   }
+
+  checkBlockCollision();
 
   // Paleta: solo se procesa si la pelota baja, para no quedar atrapada dentro
   const hitsPaddle =
@@ -154,12 +201,23 @@ function update(dt) {
 function render() {
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
+  for (const block of state.blocks) {
+    if (!block.alive) continue;
+    drawSprite(ctx, 'block_' + block.color, block.x, block.y, block.w, block.h);
+  }
+
   drawSprite(ctx, 'paddle', state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
   drawSprite(ctx, 'ball', state.ball.x, state.ball.y, state.ball.size, state.ball.size);
 
   // Franja del HUD
   ctx.fillStyle = '#222';
   ctx.fillRect(0, 0, CANVAS_W, HUD_H);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '16px sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  ctx.fillText('Puntos: ' + state.score, 8, HUD_H / 2);
 }
 
 function loop(timestamp) {
