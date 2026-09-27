@@ -29,15 +29,51 @@ const state = {
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
+// --- Entrada ---
+function clampPaddleX(x) {
+  return Math.max(0, Math.min(CANVAS_W - state.paddle.w, x));
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.input.left = true;
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.input.right = true;
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.input.left = false;
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.input.right = false;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = CANVAS_W / rect.width;
+  state.input.mouseX = (e.clientX - rect.left) * scaleX;
+});
+
 // --- Bucle de juego ---
 let lastTime = null;
 
+function updatePaddle(dt) {
+  const { paddle, input } = state;
+
+  if (input.mouseX !== null) {
+    paddle.x = input.mouseX - paddle.w / 2;
+  }
+  if (input.left) paddle.x -= PADDLE_SPEED * dt;
+  if (input.right) paddle.x += PADDLE_SPEED * dt;
+
+  paddle.x = clampPaddleX(paddle.x);
+}
+
 function update(dt) {
-  // La lógica de paleta, pelota, bloques, vidas y pausa se añade en los siguientes pasos.
+  updatePaddle(dt);
+  // La lógica de pelota, bloques, vidas y pausa se añade en los siguientes pasos.
 }
 
 function render() {
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+  drawSprite(ctx, 'paddle', state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
 
   // Franja del HUD
   ctx.fillStyle = '#222';
