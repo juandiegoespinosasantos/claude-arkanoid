@@ -30,6 +30,17 @@ const state = {
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
+// --- Sonido (SPEC 03) ---
+const SOUNDS = {
+  bounce: new Audio('assets/sounds/ball-bounce.mp3'),
+  break: new Audio('assets/sounds/break-sound.mp3'),
+};
+
+function playSound(name) {
+  const clone = SOUNDS[name].cloneNode(true);
+  clone.play().catch(() => {}); // ignora rechazo por autoplay; ya hubo interacción del usuario para llegar aquí
+}
+
 // --- Entrada ---
 function clampPaddleX(x) {
   return Math.max(0, Math.min(CANVAS_W - state.paddle.w, x));
