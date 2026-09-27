@@ -122,7 +122,7 @@ function createBlocks(level) {
         y: GRID_Y + row * BLOCK_H,
         w: BLOCK_W,
         h: BLOCK_H,
-        color: ROW_COLORS[row],
+        color: ROW_COLORS[row % ROW_COLORS.length],
         alive: true,
       });
     }
