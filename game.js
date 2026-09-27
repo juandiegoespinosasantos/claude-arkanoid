@@ -313,6 +313,9 @@ function render() {
   ctx.textAlign = 'left';
   ctx.fillText('Puntos: ' + state.score, 8, HUD_H / 2);
 
+  ctx.textAlign = 'center';
+  ctx.fillText('Nivel: ' + state.level, CANVAS_W / 2, HUD_H / 2);
+
   ctx.textAlign = 'right';
   ctx.fillText('Vidas: ' + state.lives, CANVAS_W - 8, HUD_H / 2);
 

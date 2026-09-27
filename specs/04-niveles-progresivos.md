@@ -1,6 +1,6 @@
 # SPEC 04 — Niveles progresivos con dificultad creciente
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01, SPEC 02, SPEC 03
 > **Fecha:** 2026-09-27
 > **Objetivo:** Añadir 3 niveles fijos que se juegan en secuencia dentro de la misma partida, cada uno con más bloques y una pelota más rápida que el anterior.
