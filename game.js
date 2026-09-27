@@ -91,9 +91,19 @@ function resetGame() {
   serveBall();
 }
 
+function advanceLevel() {
+  state.level += 1;
+  state.blocks = createBlocks(state.level);
+  state.explosions = [];
+  state.mode = 'serve';
+  serveBall();
+}
+
 function handleAction() {
   if (state.mode === 'won' || state.mode === 'lost') {
     resetGame();
+  } else if (state.mode === 'levelComplete') {
+    advanceLevel();
   } else {
     launchBall();
   }
