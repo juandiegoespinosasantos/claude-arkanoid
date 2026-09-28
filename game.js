@@ -1,17 +1,17 @@
-// Arkanoid — SPEC 01: MVP jugable
-// game.js es un script clásico (no módulo), cargado después de assets/spritesheet.js.
+// Arkanoid — SPEC 01: playable MVP
+// game.js is a classic script (not a module), loaded after assets/spritesheet.js.
 
-// --- Constantes ---
+// --- Constants ---
 const CANVAS_W = 480, CANVAS_H = 640;
-const HUD_H = 32;                       // franja superior del HUD
+const HUD_H = 32;                       // top HUD strip
 const BLOCK_W = 32, BLOCK_H = 16;
 const BLOCK_COLS = 13;
-const GRID_X = 32, GRID_Y = 64;         // esquina superior izquierda de la cuadrícula
+const GRID_X = 32, GRID_Y = 64;         // top-left corner of the block grid
 const ROW_COLORS = ['red', 'yellow', 'cyan', 'magenta', 'hotpink', 'green'];
-const PADDLE_W = 80, PADDLE_H = 14, PADDLE_Y = 600, PADDLE_SPEED = 420; // px/s con teclado
+const PADDLE_W = 80, PADDLE_H = 14, PADDLE_Y = 600, PADDLE_SPEED = 420; // px/s via keyboard
 const BALL_SIZE = 16;
 
-// Niveles fijos (SPEC 04): cada uno define sus filas de bloques y la velocidad de la pelota
+// Fixed levels (SPEC 04): each one defines its block rows and ball speed
 const LEVELS = [
   { rows: 6, ballSpeed: 300 },
   { rows: 8, ballSpeed: 360 },
@@ -19,12 +19,12 @@ const LEVELS = [
 ];
 const MAX_BOUNCE_ANGLE = Math.PI / 3;    // 60°
 const START_LIVES = 3, POINTS_PER_BLOCK = 10;
-const MAX_DT = 1 / 30;                   // tope de dt en segundos
+const MAX_DT = 1 / 30;                   // dt cap in seconds
 
-// --- Estado mutable ---
+// --- Mutable state ---
 const state = {
   mode: 'serve',        // 'serve' | 'playing' | 'paused' | 'levelComplete' | 'won' | 'lost'
-  level: 1,             // índice humano: 1, 2 o 3 — LEVELS[level - 1] es la config activa
+  level: 1,             // human-facing index: 1, 2 or 3 — LEVELS[level - 1] is the active config
   score: 0,
   lives: START_LIVES,
   paddle: { x: (CANVAS_W - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
@@ -38,7 +38,7 @@ const state = {
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-// --- Sonido (SPEC 03) ---
+// --- Sound (SPEC 03) ---
 const SOUNDS = {
   bounce: new Audio('assets/sounds/ball-bounce.mp3'),
   break: new Audio('assets/sounds/break-sound.mp3'),
@@ -46,10 +46,10 @@ const SOUNDS = {
 
 function playSound(name) {
   const clone = SOUNDS[name].cloneNode(true);
-  clone.play().catch(() => {}); // ignora rechazo por autoplay; ya hubo interacción del usuario para llegar aquí
+  clone.play().catch(() => {}); // ignore autoplay rejection; user interaction already happened to get here
 }
 
-// --- Entrada ---
+// --- Input ---
 function clampPaddleX(x) {
   return Math.max(0, Math.min(CANVAS_W - state.paddle.w, x));
 }
@@ -72,7 +72,7 @@ canvas.addEventListener('mousemove', (e) => {
 
 function launchBall() {
   if (state.mode !== 'serve') return;
-  const angle = Math.PI / 6; // 30° a la derecha de la vertical
+  const angle = Math.PI / 6; // 30° to the right of vertical
   const ballSpeed = LEVELS[state.level - 1].ballSpeed;
   state.ball.vx = ballSpeed * Math.sin(angle);
   state.ball.vy = -ballSpeed * Math.cos(angle);
@@ -122,7 +122,7 @@ window.addEventListener('keydown', (e) => {
   else if (state.mode === 'paused') state.mode = 'playing';
 });
 
-// --- Bloques ---
+// --- Blocks ---
 function createBlocks(level) {
   const blocks = [];
   const rows = LEVELS[level - 1].rows;
@@ -143,7 +143,7 @@ function createBlocks(level) {
 
 state.blocks = createBlocks(state.level);
 
-// --- Bucle de juego ---
+// --- Game loop ---
 let lastTime = null;
 
 function updatePaddle(dt) {
@@ -201,7 +201,7 @@ function checkBlockCollision() {
     state.score += POINTS_PER_BLOCK;
     state.explosions.push({ x: block.x, y: block.y, color: block.color, elapsed: 0 });
     playSound('break');
-    return; // como máximo un bloque por frame
+    return; // at most one block per frame
   }
 }
 
@@ -213,12 +213,12 @@ function updateBall(dt) {
     return;
   }
 
-  if (state.mode !== 'playing') return; // 'won' / 'lost': la pelota deja de moverse
+  if (state.mode !== 'playing') return; // 'won' / 'lost': the ball stops moving
 
   ball.x += ball.vx * dt;
   ball.y += ball.vy * dt;
 
-  // Paredes laterales
+  // Side walls
   if (ball.x <= 0) {
     ball.x = 0;
     ball.vx = -ball.vx;
@@ -229,7 +229,7 @@ function updateBall(dt) {
     playSound('bounce');
   }
 
-  // Techo (borde inferior del HUD)
+  // Ceiling (bottom edge of the HUD)
   if (ball.y <= HUD_H) {
     ball.y = HUD_H;
     ball.vy = -ball.vy;
@@ -245,7 +245,7 @@ function updateBall(dt) {
     return;
   }
 
-  // Paleta: solo se procesa si la pelota baja, para no quedar atrapada dentro
+  // Paddle: only checked while the ball is moving down, so it can't get stuck inside
   const hitsPaddle =
     ball.vy > 0 &&
     ball.x + ball.size >= paddle.x &&
@@ -257,7 +257,7 @@ function updateBall(dt) {
     bounceOffPaddle();
   }
 
-  // Cae por debajo de la paleta: se pierde una vida
+  // Falls below the paddle: lose a life
   if (ball.y > CANVAS_H) {
     ball.vx = 0;
     ball.vy = 0;
@@ -303,7 +303,7 @@ function render() {
   drawSprite(ctx, 'paddle', state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
   drawSprite(ctx, 'ball', state.ball.x, state.ball.y, state.ball.size, state.ball.size);
 
-  // Franja del HUD
+  // HUD strip
   ctx.fillStyle = '#222';
   ctx.fillRect(0, 0, CANVAS_W, HUD_H);
 
@@ -311,20 +311,20 @@ function render() {
   ctx.font = '16px sans-serif';
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'left';
-  ctx.fillText('Puntos: ' + state.score, 8, HUD_H / 2);
+  ctx.fillText('Score: ' + state.score, 8, HUD_H / 2);
 
   ctx.textAlign = 'center';
-  ctx.fillText('Nivel: ' + state.level, CANVAS_W / 2, HUD_H / 2);
+  ctx.fillText('Level: ' + state.level, CANVAS_W / 2, HUD_H / 2);
 
   ctx.textAlign = 'right';
-  ctx.fillText('Vidas: ' + state.lives, CANVAS_W - 8, HUD_H / 2);
+  ctx.fillText('Lives: ' + state.lives, CANVAS_W - 8, HUD_H / 2);
 
   if (state.mode === 'won' || state.mode === 'lost' || state.mode === 'paused' || state.mode === 'levelComplete') {
     const messages = {
-      won: '¡Victoria!',
+      won: 'You Win!',
       lost: 'Game Over',
-      paused: 'Pausa',
-      levelComplete: `¡Nivel ${state.level} superado!`,
+      paused: 'Paused',
+      levelComplete: `Level ${state.level} Complete!`,
     };
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
