@@ -31,7 +31,7 @@ const state = {
   ball:   { x: 0, y: 0, size: BALL_SIZE, vx: 0, vy: 0 },
   blocks: [ /* { x, y, w, h, color, alive: true } */ ],
   explosions: [ /* { x, y, color, elapsed } */ ],
-  input:  { left: false, right: false, mouseX: null },
+  input:  { left: false, right: false, mouseX: null, source: null }, // source: 'mouse' | 'keyboard'
 };
 
 // --- Canvas ---
@@ -55,8 +55,8 @@ function clampPaddleX(x) {
 }
 
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.input.left = true;
-  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.input.right = true;
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { state.input.left = true; state.input.source = 'keyboard'; }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { state.input.right = true; state.input.source = 'keyboard'; }
 });
 
 window.addEventListener('keyup', (e) => {
@@ -68,6 +68,7 @@ canvas.addEventListener('mousemove', (e) => {
   const rect = canvas.getBoundingClientRect();
   const scaleX = CANVAS_W / rect.width;
   state.input.mouseX = (e.clientX - rect.left) * scaleX;
+  state.input.source = 'mouse';
 });
 
 function launchBall() {
@@ -149,7 +150,7 @@ let lastTime = null;
 function updatePaddle(dt) {
   const { paddle, input } = state;
 
-  if (input.mouseX !== null) {
+  if (input.source === 'mouse' && input.mouseX !== null) {
     paddle.x = input.mouseX - paddle.w / 2;
   }
   if (input.left) paddle.x -= PADDLE_SPEED * dt;
